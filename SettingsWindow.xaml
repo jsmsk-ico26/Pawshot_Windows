@@ -1,0 +1,23 @@
+<Window x:Class="Pawshot_Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinShot 設定" Height="250" Width="450" WindowStartupLocation="CenterScreen"
+        Background="#F3F3F3">
+    <Grid Margin="25">
+        <StackPanel>
+            <TextBlock Text="キャプチャ画像の保存先フォルダ" FontWeight="Bold" Margin="0,0,0,8" />
+            <TextBlock Text="(DropboxやOneDriveのフォルダを指定すると便利です)" FontSize="11" Foreground="Gray" Margin="0,0,0,5" />
+            <DockPanel LastChildFill="True" Margin="0,0,0,20">
+                <Button Content="参照..." DockPanel.Dock="Right" Width="70" Height="25" Click="Browse_Click" Margin="10,0,0,0" />
+                <TextBox x:Name="PathTextBox" IsReadOnly="True" IsEnabled="False" VerticalContentAlignment="Center" Height="25" Background="White" />
+            </DockPanel>
+
+            <CheckBox x:Name="AutoSaveCheckBox" Content="キャプチャ時に自動でファイルを保存する" IsChecked="True" Margin="0,0,0,25" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="キャンセル" Width="90" Height="30" Margin="0,0,10,0" Click="Cancel_Click" Background="Transparent" BorderThickness="1" />
+                <Button Content="設定を保存" Width="100" Height="30" Click="Save_Click" Background="#007ACC" Foreground="White" BorderThickness="0" FontWeight="Bold" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

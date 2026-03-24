@@ -1,0 +1,30 @@
+<Window x:Class="Pawshot_Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Pawshot_Windows"
+        mc:Ignorable="d"
+        Title="WinShot Capture Overlay" 
+        Height="450" Width="800"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="#40000000"
+        Topmost="True" 
+        ShowInTaskbar="False"
+        Cursor="Cross"
+        WindowState="Maximized">
+    <Grid>
+        <Canvas x:Name="CaptureCanvas" Background="Transparent" 
+                MouseDown="CaptureCanvas_MouseDown" 
+                MouseMove="CaptureCanvas_MouseMove" 
+                MouseUp="CaptureCanvas_MouseUp">
+            
+            <!-- 選択範囲を描画するための半透明の四角形 -->
+            <Rectangle x:Name="SelectionRectangle" 
+                       Stroke="#FF007ACC" StrokeThickness="2" 
+                       Fill="#20007ACC" 
+                       Visibility="Collapsed" />
+        </Canvas>
+    </Grid>
+</Window>
