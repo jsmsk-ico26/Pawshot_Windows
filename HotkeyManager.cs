@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -7,6 +8,7 @@ namespace Pawshot_Windows
 {
     /// <summary>
     /// Windows APIを使用してグローバルホットキー（アプリが背面にあっても反応するキー）を管理するクラスです。
+    /// 複数のホットキーを登録でき、どのIDが押されたかをイベントで通知します。
     /// </summary>
     public class HotkeyManager : IDisposable
     {
@@ -24,34 +26,42 @@ namespace Pawshot_Windows
         private const int WM_HOTKEY = 0x0312;
         private IntPtr _hWnd;
         private HwndSource? _source;
-        private readonly int _id;
+        private readonly List<int> _registeredIds = new();
 
-        public event Action? HotkeyPressed;
+        /// <summary>ホットキーが押されたときに発火。引数はホットキーID。</summary>
+        public event Action<int>? HotkeyPressed;
 
-        public HotkeyManager(int id = 9000)
+        public void Register(Window window, int id, uint modifiers, uint key)
         {
-            _id = id;
-        }
-
-        public void Register(Window window, uint modifiers, uint key)
-        {
-            _hWnd = new WindowInteropHelper(window).Handle;
-            _source = HwndSource.FromHwnd(_hWnd);
-            _source.AddHook(HwndHook);
-
-            if (!RegisterHotKey(_hWnd, _id, modifiers, key))
+            // 初回登録時のみウィンドウに紐付ける
+            if (_source == null)
             {
-                // すでに他のアプリに使われている場合など
-                System.Windows.MessageBox.Show("ショートカットキーの登録に失敗しました。他のアプリと競合している可能性があります。");
+                _hWnd = new WindowInteropHelper(window).Handle;
+                _source = HwndSource.FromHwnd(_hWnd);
+                _source.AddHook(HwndHook);
+            }
+
+            if (!RegisterHotKey(_hWnd, id, modifiers, key))
+            {
+                System.Windows.MessageBox.Show(
+                    $"ショートカットキー (ID:{id}) の登録に失敗しました。他のアプリと競合している可能性があります。");
+            }
+            else
+            {
+                _registeredIds.Add(id);
             }
         }
 
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            if (msg == WM_HOTKEY && wParam.ToInt32() == _id)
+            if (msg == WM_HOTKEY)
             {
-                HotkeyPressed?.Invoke();
-                handled = true;
+                int id = wParam.ToInt32();
+                if (_registeredIds.Contains(id))
+                {
+                    HotkeyPressed?.Invoke(id);
+                    handled = true;
+                }
             }
             return IntPtr.Zero;
         }
@@ -59,10 +69,11 @@ namespace Pawshot_Windows
         public void Dispose()
         {
             _source?.RemoveHook(HwndHook);
-            if (_hWnd != IntPtr.Zero)
+            foreach (var id in _registeredIds)
             {
-                UnregisterHotKey(_hWnd, _id);
+                UnregisterHotKey(_hWnd, id);
             }
+            _registeredIds.Clear();
             _source?.Dispose();
         }
     }

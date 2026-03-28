@@ -27,10 +27,12 @@ public partial class MainWindow : Window
 {
     private System.Windows.Point _startPoint;
     private bool _isDragging = false;
+    private CaptureMode _captureMode;
 
-    public MainWindow()
+    public MainWindow(CaptureMode mode = CaptureMode.Annotation)
     {
         InitializeComponent();
+        _captureMode = mode;
     }
 
     private void CaptureCanvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -127,6 +129,30 @@ public partial class MainWindow : Window
                 // OCR Extraction
                 string extractedText = await ExtractTextFromBitmapAsync(bmp);
 
+                if (_captureMode == CaptureMode.Ocr)
+                {
+                    // ── OCR専用モード ──
+                    // アノテーション画面を開かずにテキストをクリップボードにコピーして終了
+                    if (!string.IsNullOrEmpty(extractedText) && !extractedText.StartsWith("（"))
+                    {
+                        System.Windows.Clipboard.SetText(extractedText);
+                        // トーストメッセージ代わりに小さなプレビューを表示
+                        var ocrPreview = new PreviewWindow(bmpSource, "", extractedText);
+                        ocrPreview.Show();
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show(
+                            "テキストを検出できませんでした。\n\n" + extractedText,
+                            "OCR 結果",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    this.Close();
+                    return;
+                }
+
+                // ── アノテーションモード ──
                 // 注釈編集ウィンドウを表示
                 var annotationWin = new AnnotationWindow(bmpSource);
                 if (annotationWin.ShowDialog() == true && annotationWin.ResultImage != null)

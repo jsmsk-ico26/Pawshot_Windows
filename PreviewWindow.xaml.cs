@@ -14,12 +14,25 @@ namespace Pawshot_Windows
         private DispatcherTimer _autoCloseTimer;
         private bool _isMouseOver = false;
 
-        public PreviewWindow(BitmapSource image, string filePath)
+        public PreviewWindow(BitmapSource image, string filePath, string ocrText = "")
         {
             InitializeComponent();
             _image = image;
             _filePath = filePath;
-            PreviewImage.Source = _image;
+
+            if (!string.IsNullOrEmpty(ocrText))
+            {
+                // OCRモード: テキストを表示、画像サムネイルは非表示
+                PreviewImage.Visibility = Visibility.Collapsed;
+                OcrPanel.Visibility = Visibility.Visible;
+                OcrHeader.Visibility = Visibility.Visible;
+                OcrText.Text = ocrText;
+            }
+            else
+            {
+                // アノテーションモード: 画像サムネイルを表示
+                PreviewImage.Source = _image;
+            }
 
             // 画面の右下（タスクバーの上）に配置
             var desktopWorkingArea = SystemParameters.WorkArea;
